@@ -32,12 +32,12 @@ if not os.path.exists(disk_path):
   subprocess.Popen(['${:qemu_img_path}', 'create' ,'-f', 'qcow2',
       disk_path, '${:disk_size}G'])
 
-# Generate NAT rules
-nat_rules = 'hostfwd=tcp:${:vnc_ip}:2222-:22,' + ','.join("hostfwd=tcp:${:vnc_ip}:%s-:%s" % (port, port) for port in [80, 110, 143, 443, 465, 587, 993, 995, 7071])
+# Generate NAT rules for ssh connexion
+nat_rules = 'hostfwd=tcp:${:vnc_ip}:2222-:22'
 
 kvm_argument_list = ['${:qemu_path}',
   '-enable-kvm', '-net', 'nic,macaddr=${:mac_address}',
-  '-net', 'user,%s' % nat_rules,  
+  '-net', 'user,%s' % nat_rules,
   '-smp', '${:smp_count}',
   '-m', '${:ram_size}',
   '-drive', 'file=${:disk_path},if=${:disk_type}',
@@ -46,7 +46,6 @@ kvm_argument_list = ['${:qemu_path}',
   '-qmp', 'unix:${:socket_path},server',
   '-pidfile', '${:pid_file_path}',
 ]
-#'-net', 'tap,ifname=${:tap_interface},script=no,downscript=no',
 
 s = getSocketStatus('${:nbd_ip}', ${:nbd_port})
 if s is None:
