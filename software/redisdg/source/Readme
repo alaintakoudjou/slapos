@@ -1,0 +1,10 @@
+execute in a terminal :
+python MapReduceRedis.py --deamon_list=broker,scheduler,worker,checker,monitor
+
+sample parameter:
+
+<?xml version="1.0" encoding="utf-8"?>
+<instance>
+<parameter id="job">{"config":"/slapos/srv/slapgrid/slappart16/srv/runner/project/redisDG/software/redisdg/source/sample.RedisDG2.xml", "files": {"redis.zip": "https://github.com/alaintakoudjou/redisdg/archive/master.zip"}}</parameter>
+</instance>
+

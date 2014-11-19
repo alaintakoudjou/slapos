@@ -1,0 +1,79 @@
+<?xml version="1.0" ?>
+<Application>
+  <Description EdgeNumber="6" Name="leadadas" NodeNumber="6"/>
+  <CloneNumber>1</CloneNumber>
+  <Channels>
+    <WaitingTasks>waitingtasks1575</WaitingTasks>
+    <TasksToDo>taskstodo7974</TasksToDo>
+    <TasksInProgress>tasksinprogress3489</TasksInProgress>
+    <TasksToVerify>taskstoverify2702</TasksToVerify>
+    <FinishedTasks>finishedtasks5257</FinishedTasks>
+    <SelectVolunteers>selectvolunteers2510</SelectVolunteers>
+    <VolunteerWorkers>volunteerworkers5594</VolunteerWorkers>
+    <Emergency>emergency3196</Emergency>
+  </Channels>
+  <Servers>
+    <CoreServer>redis.lipn.univ-paris13.fr</CoreServer>
+    <DataServer>redis.lipn.univ-paris13.fr</DataServer>
+    <CodeServer>redis.lipn.univ-paris13.fr</CodeServer>
+    <AccountingServer>redis.lipn.univ-paris13.fr</AccountingServer>
+  </Servers>
+  <Nodes>
+    <Node AVAILABLE_DISK="120Go" AVAILABLE_RAM="20Go" CPU_MODEL="Intel Xeon" FREE_UNTIL="" OS="Linux" Predecessors="[]" Runtime="4570" nodeID="1" nodeName="wrf">
+      <Inputs>
+        <Input file_name="wrf.dat" size="216006656"/>
+      </Inputs>
+      <Outputs>
+        <Output file_name="wrf.dat.out" size="2539651072"/>
+      </Outputs>
+    </Node>
+    <Node AVAILABLE_DISK="120Go" AVAILABLE_RAM="20Go" CPU_MODEL="Intel Xeon" FREE_UNTIL="" OS="Linux" Predecessors="[]" Runtime="146" nodeID="2" nodeName="lbi">
+      <Inputs>
+        <Input file_name="input.txt" size="154140672"/>
+        <Input file_name="tpp.txt" size="209715"/>
+      </Inputs>
+      <Outputs>
+        <Output file_name="lbi.txt" size="511705088"/>
+      </Outputs>
+    </Node>
+    <Node AVAILABLE_DISK="120Go" AVAILABLE_RAM="20Go" CPU_MODEL="Intel Xeon" FREE_UNTIL="" OS="Linux" Predecessors="[]" Runtime="240" nodeID="3" nodeName="ai">
+      <Inputs>
+        <Input file_name="input.txt" size="154140672"/>
+        <Input file_name="tpp.txt" size="209715"/>
+      </Inputs>
+      <Outputs>
+        <Output file_name="ai.txt" size="254803968"/>
+      </Outputs>
+    </Node>
+    <Node AVAILABLE_DISK="120Go" AVAILABLE_RAM="20Go" CPU_MODEL="Intel Xeon" FREE_UNTIL="" OS="Linux" Predecessors="[]" Runtime="4" nodeID="4" nodeName="tpp">
+      <Inputs/>
+      <Outputs>
+        <Output file_name="tpp.txt" size="209715"/>
+      </Outputs>
+    </Node>
+    <Node AVAILABLE_DISK="120Go" AVAILABLE_RAM="20Go" CPU_MODEL="Intel Xeon" FREE_UNTIL="" OS="Linux" Predecessors="[]" Runtime="78" nodeID="5" nodeName="arps2wrf">
+      <Inputs>
+        <Input file_name="ai.txt" size="254803968"/>
+        <Input file_name="wrfstatic.txt" size="19922944"/>
+        <Input file_name="lbi.txt" size="511705088"/>
+      </Inputs>
+      <Outputs>
+        <Output file_name="wrf.dat" size="216006656"/>
+      </Outputs>
+    </Node>
+    <Node AVAILABLE_DISK="120Go" AVAILABLE_RAM="20Go" CPU_MODEL="Intel Xeon" FREE_UNTIL="" OS="Linux" Predecessors="[]" Runtime="338" nodeID="6" nodeName="wrfstatic">
+      <Inputs/>
+      <Outputs>
+        <Output file_name="wrfstatic.txt" size="19922944"/>
+      </Outputs>
+    </Node>
+  </Nodes>
+  <Edge source="arps2wrf" target="wrf"/>
+  <Edge source="tpp" target="lbi"/>
+  <Edge source="tpp" target="ai"/>
+  <Edge source="lbi" target="arps2wrf"/>
+  <Edge source="ai" target="arps2wrf"/>
+  <Edge source="wrfstatic" target="arps2wrf"/>
+  <Racine>tpp</Racine>
+  <Racine>wrfstatic</Racine>
+</Application>
