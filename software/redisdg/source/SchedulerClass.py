@@ -113,7 +113,7 @@ class SchedulerClass(MachineClass):
 			for nod in nods:
 				if nod.getAttribute('nodeName') == r.childNodes[0].nodeValue:
 					x = nod.getAttribute('nodeID')
-			listracine.append(int(x))
+			listracine.append(str(x))
 
         #
         # Code to initialise the subscription
@@ -123,6 +123,8 @@ class SchedulerClass(MachineClass):
         rr.subscribe(WT)
         em = d.server.pubsub()
         em.subscribe(Em)
+        ff = d.server.pubsub()
+        ff.subscribe(FT)
 
         #
         # We analyse the message
@@ -137,15 +139,16 @@ class SchedulerClass(MachineClass):
         dic = dict()
         for msg in rr.listen():
             #print 'scheduler receives: ', msg['data']
-            logger.info('scheduler receives: %s' % msg['data'])
+            #logger.info('scheduler receives: %s' % msg['data'])
             c = ast.literal_eval(msg['data'])
             dic[c[0]] = c[1]
+	    #print'****************', type(c[1])
             nb = nb + 1
             if nb == cc:
                 break
         print 'Scheduler is finishing with dictionary of predecessors:', \
-            dic
-        logger.info('Scheduler is finishing with dictionary of predecessors:' %dic)
+            dic,
+        #logger.info('Scheduler is finishing with dictionary of predecessors:' %dic)
 
         #
         # le  scheduler reste à l'ecoute des machines volontaire
@@ -182,42 +185,59 @@ class SchedulerClass(MachineClass):
                 ff = d.server.pubsub()
                 ff.subscribe(FT)
                 # generer la liste des racines du graphe dupliqué
-                l=[]
-                for i in listracine:
-                    for j in range(int(doc.getElementsByTagName('CloneNumber')[0].childNodes[0].data)+1):
-                        x= str(i)+'.'+str(j)
-                        l.append(str(x))
+                #l=[]
+                #for i in listracine:
+		    #if int(doc.getElementsByTagName('CloneNumber')[0].childNodes[0].data)>0:
+                    	#for j in range(int(doc.getElementsByTagName('CloneNumber')[0].childNodes[0].data)+1):
+                        	#x= str(i)+'.'+str(j)
+                        	#l.append(str(x))
+		    #else:
+			#x= str(i)
+                        #l.append(str(x))
                 #print 'La liste des noeuds racines du graphe',l
                 #l = ['4.0','4.1','6.0','6.1']
+		l=listracine
                 for i in l:
 					#print '((((((((((((( listracine', i
 					d.server.publish(TTD, i)
-                
+                                        logger.info('scheduler submit %s' %str(i))
+					#print ' =========== ' ,i,' est publié dans ttd'
+		                
 
                 # waiting for new tasks without predecessors
 
                 for msg1 in ff.listen():
                     print 'scheduler receives the finished task : ', \
-                    msg1['data']
+                    msg1['data'], type(msg1['data'])
                     logger.info('scheduler receives the finished task : %s' %msg1['data'])
-                    e = str(ast.literal_eval(msg1['data']))
+                    e = ast.literal_eval(msg1['data'])
+                    print 
                     try : 
-                        del dic[e]
+                        del dic[str(e)]
                     except:
                         print 'Error : Enable to delete from dictionary'
                         logger.info('Error : Enable to delete from dictionary')
+		    #print 'the new dictionnary of tasks: ', dic, '----', len(dic)
                     for i in dic:
                         if e in dic[i]:
                             dic[i].remove(e)
-                    #print '-------the dictionnary of tasks: ', dic, '----', \
-                    #len(dic)
-                    logger.info('-------the dictionnary of tasks:  ' %dic )
-                    
+                    #print '-------the new dictionnary of tasks: ', dic, '----', len(dic)
+		    #print '------------------taille dictionnaire---------', len(dic)
+                    #logger.info('-------the dictionnary of tasks:  ' %dic )
+                    #print 'La liste des noeuds racines du graphe',l, type(l[1])
                 #raw_input('--> ')
                     for i in dic:
-                        if dic[i] == [] and i not in l:
-                            l.append(i)
-                            d.server.publish(TTD, i)
+			
+			 
+                        #if dic[i] == [] and i in l == False:
+			if dic[i] == []:
+			    #print '++++++++++++++ La liste des noeuds racines du graphe',l, ' i :',str(i)
+			    if (i in l) == False:
+			    	#print '!!!!!!!!!!!!!  i  :',i,'dic[i]:',dic[i] , type(dic[i])
+                                print 'la tache ',i, ' est publié dans tasks to do'
+                            	l.append(i)
+                            	d.server.publish(TTD, i)
+                                logger.info('scheduler submit %s' %str(i))
                 
                     if dic == {}:
                         d.server.publish(Em,'STOP')
@@ -242,4 +262,3 @@ class SchedulerClass(MachineClass):
                         exit(12)
                         break
         
-

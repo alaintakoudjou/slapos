@@ -289,7 +289,10 @@ class DataManager(ServerClass):
         self,
         list_input_files,
         list_output_files,
-        runtime
+        code,
+        #runtime
+        argument,
+	Dserver
         ):
 		
 		
@@ -299,33 +302,73 @@ class DataManager(ServerClass):
 		
         #Verifier si la liste des inputs et vide, et puis 
         #télécharger les fichiers du serveur et les ouvrir en lecture
+        
+        #for filename in list_output_files:
+            #f = open('tmp/' + filename, 'w')
+            #f = open(filename, 'a+')
+            #f.write('bonjour')
+            #f.close()
 		
         if list_input_files != []:
             #print '+++++++++++++listinput++++++++++++++++++++', list_input_files
             for filename in list_input_files:
-                mystr = self.server_d.get(filename)
-                if mystr != None:
-                    res = zlib.decompress(mystr)
-                    f = open('tmp/' + filename, 'w')
-                    f.write(res)
-                    f.close()
+                #mystr = self.server_d.get(filename)
+                #if mystr != None:
+                    #res = zlib.decompress(mystr)
+                    #f = open('tmp/' + filename, 'w')
+                    #f = open(filename, 'w')
+                    #f.write(res)
+                    #f.close()
+                 if os.path.lexists(filename)== False:
+                    #os.system('rm -r  '+filename)
+               
+                    cmd="wget http://"+Dserver+"/164-job/"+filename
+                    os.system(cmd)
+
+
+        # We download source/exec file
+        ####cmd="wget http://"+Dserver+"/164-job/"+code
+        ####os.system(cmd)
+
+        #print 'ExecCodeFromRedis: ', code_name, ' ', list_input_files, \
+        #    ' ', list_output_files
+#        mystr = self.server.get(code)
+#        if mystr != None:
+#            res = zlib.decompress(mystr)
+#            filout = open('/tmp/' + code, 'w')
+#            filout.write(res)
+#            filout.close()
+#            os.chmod('/tmp/'+ code, stat.S_IRWXU)
+
+
+
+
+
         
-        
+        p1 = subprocess.Popen([ 'export PATH=$PATH:.' ], shell=True, executable='/bin/bash')
         # we start the execution
         #time.sleep(float(runtime))            
-             
+        print 'The command to run is : ', code+' '+argument
+        p = subprocess.Popen([ code+' '+argument ], shell=True, executable='/bin/bash')        
+        p.wait()
+        #compilation=os.system('gcc Montage/'+code+'.c')    
                 
         # We store the output files into the Redis DataServer
 
         for filename in list_output_files:
-            f = open('tmp/' + filename, 'w')
-            f.write('bonjour')
-            f.close()
-            f = open('tmp/' + filename, 'r')
-            mystr = f.read()
-            res = zlib.compress(mystr)
-            self.server_d.append(filename, res)
-            f.close()
+            #f = open('tmp/' + filename, 'w')
+            cmd="sshpass -p'grid5000' scp -o StrictHostKeyChecking=no "+filename+" "+Dserver+":/var/www/164-job/"
+            #cmd="scp "+filename+" root@"+Dserver+":/var/www/164-job/"
+            os.system(cmd)
+            #f = open(filename, 'a+')
+            #f.write('bonjour')
+            #f.close()
+            #f = open('tmp/' + filename, 'r')
+            #f = open( filename, 'r')
+            #mystr = f.read()
+            #res = zlib.compress(mystr)
+            #self.server_d.append(filename, res)
+            #f.close()
         #print 'File located on Data and Code servers'
         self.ListFileName()
 		

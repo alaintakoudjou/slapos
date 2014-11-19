@@ -65,11 +65,14 @@ class WorkerClass(MachineClass):
             )
 
 
+        random.seed()
+        info = random.randint(1, 1000000)
+
         #self.config = config
         logger = logging.getLogger("RedisDG-Worker")
         logger.setLevel(logging.INFO)
         #log_file = os.path.join(config.cwd, 'log', 'worker.log')
-        log_file = 'log/worker.log'
+        log_file = 'log/worker'+str(info)+'.log'
         file_handler = logging.FileHandler(log_file)
         file_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
         logger.addHandler(file_handler)
@@ -129,8 +132,8 @@ class WorkerClass(MachineClass):
         em.subscribe(Em)
         
         
-        random.seed()
-        info = random.randint(1, 1000000)        
+        #random.seed()
+        #info = random.randint(1, 1000000)        
         
         #try:
 		#os.remove('log/accounting'+str(info)+'.log')
@@ -141,7 +144,8 @@ class WorkerClass(MachineClass):
 	# set up logging to file
 	logging.basicConfig(level=logging.DEBUG,format='%(asctime)s\n%(message)s',datefmt='%d-%m-%Y %H:%M:%S',filename='log/accounting'+str(info)+'.log',filemode='w')
         
-        
+        #print '#################### Nodes: ', batch.MyGraph.nodes()
+        #print '#################### Edges: ', batch.MyGraph.edges()
         
 
 
@@ -159,7 +163,7 @@ class WorkerClass(MachineClass):
 					#print 'worker receives the task: ', \
 						#msg['data']
 					#print '--------------',msg['data']
-					logger.info ('worker receives the task: %s' %msg['data'])
+					#logger.info ('worker receives the task: %s' %msg['data'])
 					c = str(ast.literal_eval(msg['data']))
 					#print '+++++++++++',c
 
@@ -169,7 +173,7 @@ class WorkerClass(MachineClass):
 
 					d.server.publish(VW, (str(info), c))
 					#print 'Worker publishes: i am volunteers +++++', info
-					logger.info ('Worker publishes: i am volunteers  %s' %info)
+					#logger.info ('Worker publishes: i am volunteers  %s' %info)
 				os.kill(mypid1,signal.SIGKILL);os.wait()
         else:
              pid2 = os.fork()
@@ -185,14 +189,15 @@ class WorkerClass(MachineClass):
                          #print 'worker with info:', info, \
                          #'listen to the message', cc, \
                          #'on the channel SelectVolunteers'
-                         logger.info('worker with info: %s listen to the message%s on the channel SelectVolunteers' %(info,cc) )
+                         #logger.info('worker with info: %s listen to the message%s on the channel SelectVolunteers' %(info,cc) )
 
                 # break;# au premier on sort
 
                          if cc[0] == str(info):
-                             print 'Worker ',info, ' is executing task ', \
+                             print '\n Worker ',info, ' is executing task ', \
                              cc[1]
-                             logger.info('Worker %s is executing task %s' %(info,cc[1]) )
+			     x=int(cc[1])
+                             #logger.info('Worker %s is executing task %s' %(info,cc[1]) )
                              process_id = os.getppid()
                              try:
                               my_ip = socket.gethostbyname(socket.gethostname())
@@ -204,29 +209,31 @@ class WorkerClass(MachineClass):
 
                              #print 'Worker ', info, ' is publishing task ', \
                              #cc[1], 'on TasksInProgress channel'
-                             logger.info('Worker %s is publishing task %s on TasksInProgress channel' %(info,cc[1]))
+                             #logger.info('Worker %s is publishing task %s on TasksInProgress channel' %(info,cc[1]))
 
                     #
 
                              #myfile = batch.MyGraph.node[cc[1]]['CODE']
                              #if myfile.endswith('.py'):
-                                 #language = 'python'
+                             #    language = 'python'
                              #else:
-                                 #language = '/bin/bash '
+                             #    language = '/bin/bash '
                              
                              
                              #print 'I start the execution of ', myfile, \
                              #' from code on server'
-                             #logger.info('I start the execution of %s from code on server' %myfile )
-                             print 'I start the execution of ',cc[1]
+                             logger.info('worker %s : I start the execution of %s' %(str(info),cc[1]))
+                             print 'I start the execution of ',cc[1], type(cc[1])
                              
-                             #print '&&&&&&&&&&&&&&&&&&', cc[1],'&&&&&&&&',batch.MyGraph.node[cc[1]]['INPUT_FILE']
+                             #print '&&&&&&&&&&&&&&&&&&', cc[1],'&&&&&&&&', batch.MyGraph.node[x]['INPUT_FILE']
                              #print '&&&&&&&&&&&&&&&&&&',cc[1],'&&&&&&&&', batch.MyGraph.node[cc[1]]['OUTPUT_FILE'],'+++'
                              
                              
                              #time.sleep(float(batch.MyGraph.node[cc[1]]['RUNTIME']))
                              #print '******1111111111111*****', batch.MyGraph.node[cc[1]]['INPUT_FILE'],'+++'
-                             d.ExecCodeFromRedis_Pegasus(batch.MyGraph.node[cc[1]]['INPUT_FILE'],batch.MyGraph.node[cc[1]]['OUTPUT_FILE'],batch.MyGraph.node[cc[1]]['RUNTIME'])
+                             #d.ExecCodeFromRedis_Pegasus(batch.MyGraph.node[cc[1]]['INPUT_FILE'],batch.MyGraph.node[cc[1]]['OUTPUT_FILE'],batch.MyGraph.node[cc[1]]['CODE'],batch.MyGraph.node[cc[1]]['RUNTIME'])
+                             #print '******1111111111111*****', batch.MyGraph.node[x]['ARGUMENT'],'+++'
+                             d.ExecCodeFromRedis_Pegasus(batch.MyGraph.node[x]['INPUT_FILE'],batch.MyGraph.node[x]['OUTPUT_FILE'],batch.MyGraph.node[x]['CODE'],batch.MyGraph.node[x]['ARGUMENT'],Dserver)
 
                     #
 
@@ -236,10 +243,11 @@ class WorkerClass(MachineClass):
 
                     #
 
-                             d.server.publish(TTV, cc[1])
+                             #d.server.publish(TTV, cc[1])
+                             d.server.publish(FT, cc[1])
                              #print 'Worker ', info, ' is publishing task ', \
                              #cc[1], 'on TasksToVerify channel'
-                             logger.info('Worker %s is publishing task %s on TasksToVerify channel' %(info,cc[1]))
+                             #logger.info('Worker %s is publishing task %s on TasksToVerify channel' %(info,cc[1]))
 		    os.kill(mypid2,signal.SIGKILL);os.wait()
              else :
                      em = d.server.pubsub()
@@ -248,7 +256,7 @@ class WorkerClass(MachineClass):
                          pp = s['data']
                          if pp == 'STOP' :
                              #print 'parent process (worker) listen to EMERGENCY',os.getpid()
-                             logger.info('parent process (worker) listen to EMERGENCY %s' %os.getpid())
+                             #logger.info('parent process (worker) listen to EMERGENCY %s' %os.getpid())
                              #time.sleep(3);
                              import signal
                              os.kill(pid1,signal.SIGKILL)
@@ -268,7 +276,6 @@ class WorkerClass(MachineClass):
 			     #jj=fin.read()
 			     #fin.close()
 			     #print jj
-			     d.StoreRawFileIntoRedis('10.10.0.1', 'log/accounting'+str(info)+'.log', 'ACCOUNTING')
+			     #d.StoreRawFileIntoRedis('10.10.0.1', 'log/accounting'+str(info)+'.log', 'ACCOUNTING')
                              exit(1)
-
 
